@@ -1,0 +1,5 @@
+{
+    "go.buildFlags": [
+        "-ldflags", "-X mypackage.myvalue=./"    
+    ]
+}
