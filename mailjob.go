@@ -54,10 +54,6 @@ func (j MailJob) String() string {
 
 // Execute executes the mailjob using sendmail
 func (j MailJob) Execute() error {
-	return nil
-}
-
-func (j MailJob) _execute() error {
 	auth := smtp.PlainAuth(
 		"",             // identity
 		"buzzert",      // username
