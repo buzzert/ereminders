@@ -58,7 +58,7 @@ func (j MailJob) Execute() error {
 		"",             // identity
 		"buzzert",      // username
 		"***REMOVED***", // password TODO: gpg this or something
-		"localhost",
+		"***REMOVED***",
 	)
 
 	msgString := "To: buzzert@***REMOVED***\r\n"
@@ -67,7 +67,7 @@ func (j MailJob) Execute() error {
 	msgString += j.Message
 
 	err := smtp.SendMail(
-		"localhost:25",
+		"***REMOVED***:25",
 		auth,
 		"E-Reminders <ereminders@***REMOVED***>",
 		[]string{"buzzert@***REMOVED***"},
