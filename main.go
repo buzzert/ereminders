@@ -93,8 +93,7 @@ func parseJobFile(filePath string) (*MailJob, error) {
 					return nil, err
 				}
 
-				//job.Date = nextDateForRepeatType(job.Repeat, res.Time)
-				job.Date = res.Time
+				job.Date = nextDateForRepeatType(job.Repeat, res.Time)
 				lineno++
 			}
 
