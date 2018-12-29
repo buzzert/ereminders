@@ -26,6 +26,11 @@ type safeJobList struct {
 }
 
 func nextDateForRepeatType(repeatType RepeatType, date time.Time) time.Time {
+	if time.Now().Sub(date) < 0 {
+		// Date is already in the future
+		return date
+	}
+
 	switch repeatType {
 	case RepeatDaily:
 		date = date.AddDate(0, 0, 1)
