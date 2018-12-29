@@ -13,10 +13,6 @@ const pipesDirectory string = "/tmp/ereminders_pipes"
 const commandPipeName string = "commands"
 const commandResultPipeName string = "recv"
 
-// Pipe is used to communicate from a child process and the daemon
-type Pipe struct {
-}
-
 func getTemporaryDirectory() (string, error) {
 	err := os.MkdirAll(pipesDirectory, 0755)
 	if err != nil {
@@ -28,7 +24,8 @@ func getTemporaryDirectory() (string, error) {
 }
 
 func makeNamedPipe(name string) string {
-	namedPipeFilename := filepath.Join(pipesDirectory, name)
+    tempDir, _ := getTemporaryDirectory()
+	namedPipeFilename := filepath.Join(tempDir, name)
 	syscall.Mkfifo(namedPipeFilename, 0600)
 
 	return namedPipeFilename
