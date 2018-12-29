@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"flag"
 	"log"
 	"os"
 	"path/filepath"
@@ -201,6 +202,14 @@ func isValidJobFile(path string) bool {
 	return true
 }
 
+func startListeningForCommands(commandChannel chan string) {
+	log.Println("Daemon is listening for commands")
+
+	for {
+		commandChannel <- ReadCommand()
+	}
+}
+
 func startMonitoringFilesystem(watchPath string, addedJobChannel chan MailJob, removedJobNameChannel chan string) {
 	log.Println("Beginning fs monitoring")
 
@@ -246,12 +255,27 @@ func startMonitoringFilesystem(watchPath string, addedJobChannel chan MailJob, r
 	}
 }
 
-func main() {
-	if len(os.Args) < 2 {
-		log.Fatal("usage: ", os.Args[0], " jobsPath")
+func jobListDescription(jobList []MailJob) string {
+	now := time.Now()
+
+	var description string
+	for _, job := range jobList {
+		timeRemaining := job.Date.Sub(now)
+		description += "in " + timeRemaining.String() + ": "
+		description += job.String()
+		description += "\n"
 	}
 
-	jobsPath := os.Args[1]
+	return description
+}
+
+func startDaemon(jobsPath string) {
+	if len(jobsPath) == 0 {
+		println("Usage: ereminders {-d [reminders directory] | -l}")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
 	if _, err := os.Stat(jobsPath); os.IsNotExist(err) {
 		log.Fatal("Error: jobsPath does not exist")
 	}
@@ -268,13 +292,16 @@ func main() {
 
 	addedJobChannel := make(chan MailJob)
 	removedJobNameChannel := make(chan string)
+	commandChannel := make(chan string)
 
 	jobs := parseJobList(files)
 
 	// Spawn off filesystem monitor
+	go startListeningForCommands(commandChannel)
 	go startMonitoringFilesystem(jobsPath, addedJobChannel, removedJobNameChannel)
 
-	for {
+	running := true
+	for running {
 		jobs, timeUntilNextJob = executeJobList(jobs)
 
 		if timeUntilNextJob == -1 {
@@ -300,9 +327,43 @@ func main() {
 			}
 			continue
 
+		case commandString := <-commandChannel:
+			println("got command")
+			if commandString == "exit" {
+				running = false
+			} else if commandString == "list" {
+				result := "Time until next job: " + timeUntilNextJob.String() + "\n"
+				result += jobListDescription(jobs)
+				SendResponse(result)
+			} else {
+				SendResponse("unrecognized")
+			}
+			continue
+
 		// Or wait until the next job
 		case <-time.After(timeUntilNextJob):
 			continue
 		}
 	}
+}
+
+func main() {
+	var showList bool
+	var jobsPath string
+
+	daemonUsage := "Run as daemon and watch provided directory"
+	flag.StringVar(&jobsPath, "d", "", daemonUsage)
+
+	listUsage := "List all currently scheduled jobs"
+	flag.BoolVar(&showList, "l", false, listUsage)
+
+	flag.Parse()
+
+	if showList {
+		response := TransmitCommand("list")
+		println(response)
+		os.Exit(1)
+	}
+
+	startDaemon(jobsPath)
 }
