@@ -237,7 +237,10 @@ func startMonitoringFilesystem(watchPath string, addedJobChannel chan MailJob, r
 				continue
 			}
 
-			if event.Op&fsnotify.Create == fsnotify.Create {
+			if event.Op&fsnotify.Create == fsnotify.Create ||
+				event.Op&fsnotify.Write == fsnotify.Write {
+				// On write or create. Let main runloop figure out if this job exists
+				// already or not
 				log.Println("FSEvent: Found new job")
 
 				newJob, _ := parseJobFile(event.Name)
