@@ -232,7 +232,7 @@ func startMonitoringFilesystem(watchPath string, addedJobChannel chan MailJob, r
 			if !ok {
 				return
 			}
-			log.Println("Got FS event! ", event)
+			// log.Println("Got FS event! ", event)
 			if !isValidJobFile(event.Name) {
 				continue
 			}
@@ -318,7 +318,20 @@ func startDaemon(jobsPath string) {
 		select {
 		// Signal from the fs monitor -- added jobs
 		case addedJob := <-addedJobChannel:
-			jobs = append(jobs, addedJob)
+			// Check for existing job with the same filename
+			jobExists := false
+			for idx, job := range jobs {
+				if job.FilePath == addedJob.FilePath {
+					jobs[idx] = addedJob
+					jobExists = true
+					break
+				}
+			}
+
+			// Otherwise, add the job to the job list
+			if !jobExists {
+				jobs = append(jobs, addedJob)
+			}
 			continue
 
 		// Removed jobs
@@ -333,7 +346,6 @@ func startDaemon(jobsPath string) {
 			continue
 
 		case commandString := <-commandChannel:
-			println("got command")
 			if commandString == "exit" {
 				running = false
 			} else if commandString == "list" {
