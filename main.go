@@ -99,7 +99,13 @@ func parseJobFile(filePath string) (*MailJob, error) {
 					return nil, err
 				}
 
-				job.Date = nextDateForRepeatType(job.Repeat, res.Time)
+                // If the parsed date is in the past, calculate the next future date
+                for time.Now().Sub(res.Time) > 0 {  // while date is in the past
+                    res.Time = nextDateForRepeatType(job.Repeat, res.Time)
+                }
+
+                job.Date = res.Time
+
 				lineno++
 			}
 
@@ -194,7 +200,7 @@ func executeJobList(jobs []MailJob) ([]MailJob, time.Duration) {
 func isValidJobFile(path string) bool {
 	basename := filepath.Base(path)
 
-	// Ignmore files that start with .
+	// Ignore files that start with .
 	if basename[0] == '.' {
 		return false
 	}
@@ -348,6 +354,7 @@ func startDaemon(jobsPath string) {
 			}
 			continue
 
+        // Received command
 		case commandString := <-commandChannel:
 			if commandString == "exit" {
 				running = false
