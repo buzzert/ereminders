@@ -1,0 +1,11 @@
+[email]
+to   = "Dade Murphy <dademurphy@example.com>"
+from = "E-Reminders <ereminders@example.com>"
+
+[smtp]
+host = "example.com"
+port = 25
+username = "dademurphy"
+password = "iwas0cool"
+
+

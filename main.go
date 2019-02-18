@@ -152,7 +152,7 @@ func parseJobList(jobPaths []string) []MailJob {
 
 // executeJobList executes the list of jobs and returns the remaining jobs and the
 // duration until the next job
-func executeJobList(jobs []MailJob) ([]MailJob, time.Duration) {
+func executeJobList(jobs []MailJob, config Config) ([]MailJob, time.Duration) {
 	var newJobList []MailJob
 
 	now := time.Now()
@@ -165,7 +165,7 @@ func executeJobList(jobs []MailJob) ([]MailJob, time.Duration) {
 			println("Executing job: " + job.String())
 
 			// The job date has already passed. Execute.
-			err := job.Execute()
+			err := job.ExecuteWithConfig(config)
 			if err != nil {
 				log.Fatal("Error executing job: ", err)
 			} else {
@@ -283,16 +283,24 @@ func jobListDescription(jobList []MailJob) string {
 	return description
 }
 
-func startDaemon(jobsPath string) {
+func startDaemon(jobsPath string, configPath string) {
 	if len(jobsPath) == 0 {
 		println("Usage: ereminders {-d [reminders directory] | -l}")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
+    // Check jobs path
 	if _, err := os.Stat(jobsPath); os.IsNotExist(err) {
 		log.Fatal("Error: jobsPath does not exist")
 	}
+
+    // Check config path
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		log.Fatalf("Error: Config file does not exist (checking %s)", configPath)
+	}
+
+    config := LoadConfigFromFile(configPath)
 
 	dateParser.Add(en.All...) // add english locale
 	dateParser.Add(common.All...)
@@ -316,7 +324,7 @@ func startDaemon(jobsPath string) {
 
 	running := true
 	for running {
-		jobs, timeUntilNextJob = executeJobList(jobs)
+		jobs, timeUntilNextJob = executeJobList(jobs, config)
 
 		if timeUntilNextJob == -1 {
 			// Basically wait until infinity until fsevent occurs.
@@ -377,12 +385,16 @@ func startDaemon(jobsPath string) {
 func main() {
 	var showList bool
 	var jobsPath string
+    var configPath string
 
 	daemonUsage := "Run as daemon and watch provided directory"
 	flag.StringVar(&jobsPath, "d", "", daemonUsage)
 
 	listUsage := "List all currently scheduled jobs"
 	flag.BoolVar(&showList, "l", false, listUsage)
+
+    configUsage := "Path to config.toml file"
+    flag.StringVar(&configPath, "c", GetDefaultConfigPath(), configUsage)
 
 	flag.Parse()
 
@@ -392,5 +404,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	startDaemon(jobsPath)
+	startDaemon(jobsPath, configPath)
 }

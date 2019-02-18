@@ -1,6 +1,7 @@
 package main
 
 import (
+    "fmt"
 	"net/smtp"
 	"os"
 	"time"
@@ -53,24 +54,24 @@ func (j MailJob) String() string {
 }
 
 // Execute executes the mailjob using sendmail
-func (j MailJob) Execute() error {
+func (j MailJob) ExecuteWithConfig(config Config) error {
 	auth := smtp.PlainAuth(
-		"",             // identity
-		"buzzert",      // username
-		"***REMOVED***", // password TODO: gpg this or something
-		"***REMOVED***",
+		"",                          // identity
+		config.Server.Username,      // username
+		config.Server.Password,      // password
+		config.Server.Host,          // host
 	)
 
-	msgString := "To: buzzert@***REMOVED***\r\n"
-	msgString += "From: E-Reminders<ereminders@***REMOVED***>\r\n"
+	msgString := "To: " + config.Email.To + "\r\n"
+	msgString += "From: " + config.Email.From + "\r\n"
 	msgString += "Subject: [E-Reminder] " + j.Message + "\r\n\r\n"
 	msgString += j.Message
 
 	err := smtp.SendMail(
-		"***REMOVED***:25",
+        fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port),
 		auth,
-		"E-Reminders <ereminders@***REMOVED***>",
-		[]string{"buzzert@***REMOVED***"},
+        config.Email.From,
+		[]string{config.Email.To},
 		[]byte(msgString),
 	)
 
@@ -81,3 +82,4 @@ func (j MailJob) Execute() error {
 func (j MailJob) SelfDestruct() {
 	os.Remove(j.FilePath)
 }
+

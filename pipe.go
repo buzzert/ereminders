@@ -85,3 +85,4 @@ func TransmitCommand(command string) string {
 	SendCommand(command)
 	return ReadResponse()
 }
+
