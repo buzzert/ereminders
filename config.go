@@ -2,7 +2,9 @@ package main
 
 import (
     "fmt"
+    "path"
     "github.com/BurntSushi/toml"
+    "os/user"
 )
 
 type Config struct {
@@ -23,7 +25,9 @@ type smtpInfo struct {
 }
 
 func GetDefaultConfigPath() string {
-    return "~/.config/ereminders/config.toml"
+    currentUser, _ := user.Current()
+    homeDir := currentUser.HomeDir
+    return path.Join(homeDir, "/.config/ereminders/config.toml")
 }
 
 func LoadConfigFromFile(filepath string) Config {
