@@ -20,11 +20,6 @@ import (
 
 var dateParser = when.New(nil)
 
-type safeJobList struct {
-	list []MailJob
-	mux  sync.Mutex
-}
-
 func nextDateForRepeatType(repeatType RepeatType, date time.Time) time.Time {
 	if time.Now().Sub(date) < 0 {
 		// Date is already in the future
@@ -406,3 +401,4 @@ func main() {
 
 	startDaemon(jobsPath, configPath)
 }
+
