@@ -1,6 +1,6 @@
 # eReminders
 
-eReminders is a reminders program that has __no user interface__. You create reminder text files in a watched directory, and eReminders will automatically email you when the reminder's date is elapsed. 
+eReminders is a reminders program that has __no user interface__. Create reminder text files in a watched directory containing a date and title, and eReminders will send you an email with the reminder's title as the subject when the specified date elapses. 
 
 This project works really great for those who follow the "Inbox Zero" philosophy.
 
@@ -25,7 +25,7 @@ eReminders will watch this directory for changes. If you delete a reminder, crea
 
 When you create a reminder, it will be scheduled to email you with the reminder title as the subject of the email. If you want to take a look at all the currently scheduled reminders (and make sure eReminders parsed the date correctly), you can run `ereminders -l`. 
 
-eReminders also supports recurring reminders. This is really helpful for remembering to pay bills or something. To create a recurring reminder, edit the first line of your reminder to declare whether or not its a `repeat daily`, `repeat weekly`, or `repeat monthly` reminder, like this:
+eReminders also supports recurring reminders. To create a recurring reminder, edit the first line of your reminder to declare whether or not its a `repeat daily`, `repeat weekly`, or `repeat monthly` reminder, like this:
 
 ```
 repeat monthly
