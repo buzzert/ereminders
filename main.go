@@ -26,12 +26,15 @@ func nextDateForRepeatType(repeatType RepeatType, date time.Time) time.Time {
     }
 
     switch repeatType {
-    case RepeatDaily:
-        date = date.AddDate(0, 0, 1)
     case RepeatWeekly:
         date = date.AddDate(0, 0, 7)
     case RepeatMonthly:
         date = date.AddDate(0, 1, 0)
+    case RepeatDaily:
+        // Default is a daily repeat. Fallthrough to default case
+        fallthrough
+    default:
+        date = date.AddDate(0, 0, 1)
     }
 
     return date
